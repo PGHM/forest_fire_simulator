@@ -1,0 +1,180 @@
+Background:
+
+Wildfires are affected by the weather, the fuel type and the intensity of the
+fuel available. Weather factors are humidity, temperature and wind speed.
+Wind speed directs the heat and the flames and also brings oxygen to the
+flames. Lower humidity makes the fuel more dry and makes it possible to the
+wildfire to start. Higher temperatures make the wildfire burn faster. Fuel
+types are different kind of trees, bushes and grasses. Fuel intensity
+describes how much of the fuel is available in the area.
+
+There are different kind of fires also. Groundfire, surface fire and crown
+fire. Crown fire requires dense branches and that is why surface fire is the
+usual way the fire starts and goes on. Although the fire can move much more
+quickly in a crown fire. Crown fire also causes spot fires, which means that
+burning material is launched by the hot air to another location and it will
+start a new spot fire. In this simulation these different fires are not taken
+in to account, because it could make the simulation too complicated.
+
+As for fuel types, broad leaved trees are the least susceptible to ignite and
+burn fast. Spruces are the most susceptible, because they have dense branching
+and thin needletype leaves, that can burn very quickly. Pines are not as
+densely branched as spruces, but have the same type of needles as spruces, to
+they are still pretty flammable. Broad leaved trees also don't get that much
+dead or dry branches as the conifer trees do. For the ground materials, normal
+grass is not very susceptible to fire, but will burn if the intensity of the
+fire is high enough. Tall hay grass will burn quickly though. There is also
+much dead and old material from trees in the ground, more so in clear cutting
+sites, where fire can continue even if there is no trees. Swamps have really
+low rick of fire, naturally. Peat lands burn with smaller intensity than
+mineral lands, although if peat has been trenched it can dry and burn pretty
+easily. [1]
+
+Another thing that also affects the spread of the fire is slope, as in steep
+slope the heat and gases rise up and affect the new material that is about to
+start burning faster. Similarly downhill the spread is lower, and the wind
+usually blows uphill too during the day, although in this simulation the
+direction of the wind is static, because of the data available. [4]
+
+Without spesific source, the finnish Wikipedia article mentions that wildfire
+usually spreads about 3-8% of the wind speed. [2] Another source gives upper
+limits to the wildfire speed at 10~ kilometers per hour or 3~ meters per
+second. [3]
+
+Assumptions for the simulation model:
+
+Humidity data was not easily available, so it is very hard to take to account
+in this analysis. We chose a month (07/2006) where there was almost no rain
+(16mm) and relatively high mean temperature (16.5 celcius), so there should be
+a good chance for wildfire.
+
+The slope will either speed up or slow down the speed of the fire by 0-8%.
+This value is not based on any source, because we could not find any, it just
+seems reasonable, it could really be much higher.
+
+The wind speed differs at each elevation. We have wind speeds for 50m, 100m
+and 200m so we will interpolate linearly the rest of the values for each
+elevation from these base values.
+
+The effect of the wind speed on the speed of the wildfire was pretty difficult
+to verify, as we two very different kind of sources. With our wind speeds (3-7
+m/s) the first source [2] would put the speed at 3-8% of that so the speed
+would be around 0.1-0.5 m/s which is vastly slower than the 3 m/s from the
+other source. We will adjust the reading from source one by doubling it
+because of this and the final rate will be 8-16% so on average the wildfire
+will spread at 11% of the wind speed if the wind is blowing directly to that
+direction.
+
+The direction of the wind affects how much the wind speed boosts the spread of
+the fire. The assumption is that the wildfire speads to the direction of the
+wind in a pear shape form [5], and the target is to adjust the wind direction
+in the simulation model so that in a homogenous dense forest the simulation
+would produce a result like this. Then we can apply it to a heterogenous real
+world situation with different types of slopes and forest types.
+
+After testing with the homogenous forest we arrived at following values to the
+effect of the wind direction to the speed of the fire:
+
+45 degrees: 60%
+90 degrees: 35%
+145 degrees: 25%
+180 degrees: 15%
+
+So if the direction is 45 degrees from the direction of the wind, the actual
+effect of the wind speed is 60% from the original.
+
+Lindberg et al has quite nice classes for all the mineral land forest types,
+so we will use their relative fire risks as a baseline for the fire advance
+rate and reduce the flammability of the similar type of forest in peat lands
+by 25% due to the harsher ground level environment for them. 
+
+Fields burn really fast, faster then any mineral land forest as they are
+really thin and airy materials. Swamps, roads, water areas do not burn at all.
+Old clear cutting areas have moderate burning chance, about the same as peat
+forest on average. Seeding stand areas have small burning risk because most of
+the fuel material is living, but there can be remnants of the felling which
+can ignite easily. 
+
+All the forest types also have higher burning capabilities the more they have
+trees in the area (applicable for types which have information about the
+amount of trees).
+
+Pine dominated mineral soil forests (type 78) had the most average chances of
+burning according to Lindberg et al so we will use them as a baseline that
+will burn at 100% rate of what the wind speed, wind direction and slope would
+indicate. Other types have their values adjusted by the previously shown
+reasons.
+
+Fire advance rates:
+
+TypeRate(%) Type name                                  Amount of forest
+1   inf     Burning ground / environment
+7   0       Unburnable environment
+13  150     Cultivated areas
+20  50      Clear cutting areas
+42  0       Open peat lands
+46  100     Spruce-dominated peatlands                 < 101 m3/ha
+47  110     "                                          102-151     
+49  120     "                                          > 152  
+51  50      Deciduous-dominated peatlands              < 101 m3/ha 
+52  60      "                                          > 102 
+56  100     Deciduous-coniferous mixed peat lands      < 101 m3/ha
+57  110     "                                          102-151  
+59  120     "                                          > 152  
+67  75      Pine dominated peatlands                   < 51 m3/ha 
+69  85      "                                          52-151  
+71  95      "                                          > 152
+78  100     Pine dominated mineral soil forests        < 101 m3/ha (baseline)
+79  110     "                                          102-151  
+81  120     "                                          > 152
+89  125     Spruce-dominated mineral soil forests      < 101 m3/ha  
+90  135     "                                          102-151  
+92  145     "                                          > 152  
+100 75      Deciduous-dominated soil forests           < 101 m3/ha  
+101 80      "                                          102-151  
+103 85      "                                          > 152
+116 125     Coniferous-deciduous mixed soil forests    < 101 m3/ha  
+117 135     "                                          102-151  
+119 145     "                                          > 152  
+132 75      Plantations
+
+The simulation model:
+
+The simulation starts with one pixel burning and the wind speed set to certain
+direction. The time starts from zero and is incremented by one second at each
+round of the main loop of the simulation. 
+
+In every loop, first we check if the fire will reach any of the pixels at this
+second. If it does, we will set these pixels as burning and check if their
+neighbours have any pixels that are eligible to be set on fire. If there is we
+go through them and calculate the time that is required from the fire to reach
+that pixel. Then we check if this time is smaller than the time from some
+possible other pixel and update the time accordingly.
+
+The time that it takes the fire to reach the next pixel is calculated by
+taking the slope, wind speed, wind direction and forest type in to account to
+calculate the speed of the fire in the direction of the pixel and
+then dividing the cell size in meters by this speed.
+
+Results are drawn to a gif file that demonstrates the state of the forest
+every 500 seconds, burning pixels are representated with red colour and other
+colours are as in the source forest type file.
+
+Used data sources:
+
+http://www.tuuliatlas.fi/windspeed/ - 50m, 100m and 200m for June
+
+and from Paituli:
+
+FMI, Monthly precipitation, 1x1km
+FMI, Monthly temperature, 1x1km
+NLS, Elevation model, 25 x 25, 2000, 22N
+NLS, Land use and forest classification, 25 x 25, 2000, 22N
+
+Sources:
+
+[1] Suomen metsien paloainekset, H. Lindberg, T. Heikkilä, I. Vanha-Majamaa
+[2] https://fi.wikipedia.org/wiki/Mets%C3%A4palo, as seen on 30.11.2014.
+[3] http://environment.nationalgeographic.com/environment/natural-disasters/wildfires/, as seen on 30.11.2014.
+[4] FARSITE: Fire area simulator-model development and evaluation, Mark A. Finney
+[5] https://en.wikipedia.org/wiki/Wildfire_modeling, as seen on 30.11.2014.
